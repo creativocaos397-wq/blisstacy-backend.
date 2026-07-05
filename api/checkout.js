@@ -1,18 +1,18 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 module.exports = async (req, res) => {
-    // Estas cabeceras dicen al navegador: "Confía en Framer, deja pasar esta comunicación"
+    // Cabeceras CORS para permitir la conexión con Framer
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-    // Responder a las peticiones preflight (las que el navegador hace antes de enviar datos)
+    // Manejo de peticiones preflight
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
     }
 
     if (req.method !== 'POST') {
-        return res.status(405).json({ error: "Método no permitido." });
+        return res.status(405).json({ error: "Método no permitido. Usa POST." });
     }
 
     try {
@@ -20,6 +20,17 @@ module.exports = async (req, res) => {
         
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
+            
+            // 1. Recolección de Dirección de Envío (Habilitado para México)
+            shipping_address_collection: {
+                allowed_countries: ['MX'],
+            },
+            
+            // 2. Recolección de Número de Teléfono
+            phone_number_collection: {
+                enabled: true,
+            },
+
             line_items: items.map(item => ({
                 price_data: {
                     currency: 'mxn',
