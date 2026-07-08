@@ -31,6 +31,9 @@ module.exports = async (req, res) => {
                 enabled: true,
             },
 
+            // 3. Habilitar códigos de promoción
+            allow_promotion_codes: true,
+
             line_items: items.map(item => ({
                 price_data: {
                     currency: 'mxn',
